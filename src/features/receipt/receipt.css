@@ -1,0 +1,54 @@
+/* Styled as a till receipt: narrow, monospaced, torn top edge. */
+.receipt {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 34rem;
+  padding: var(--space-5);
+  background: var(--color-sheet);
+  box-shadow: var(--shadow-sheet);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  border-top: 2px dashed var(--color-rule);
+}
+
+.receipt-total {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed var(--color-ink-soft);
+}
+
+.receipt ol {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.receipt-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.receipt details {
+  margin-top: var(--space-2);
+}
+
+.receipt summary {
+  cursor: pointer;
+  color: var(--color-cloud);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.receipt pre {
+  margin-top: var(--space-2);
+  max-height: 18rem;
+  overflow: auto;
+  padding: var(--space-3);
+  background: var(--color-paper);
+  line-height: 1.8;
+}
+
+.receipt-note {
+  margin-top: var(--space-2);
+  color: var(--color-urgent);
+}

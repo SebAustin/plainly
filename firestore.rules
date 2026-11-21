@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each anonymous user can only read and write their own tracked deadlines.
+    match /users/{userId}/deadlines/{deadlineId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(
+             ['sender', 'category', 'urgency', 'deadline', 'amountDue', 'createdAt'])
+        && request.resource.data.sender is string
+        && request.resource.data.sender.size() <= 200
+        && request.resource.data.deadline.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+  }
+}
