@@ -35,7 +35,7 @@ const MESSAGES: Record<BlockReason | 'unreadable-answer' | 'failed', string> = {
   'needs-cloud-consent': '',
   'unreadable-answer':
     'The model could not produce a clear reading of this letter. Try a sharper photo or paste the text.',
-  failed: 'Something went wrong while reading. Nothing was saved. Please try again.',
+  failed: 'Something went wrong and the model did not answer. Nothing was saved. Please try again.',
 }
 
 function describeError(error: unknown): string {
@@ -169,6 +169,8 @@ export function usePlainly() {
         setCloudHistory((turns) => [...turns, ...reply.cloudTurns])
         setConversation((turns) => [...turns, { role: 'plainly', text: reply.answer }])
       } catch (askError) {
+        // Take the unanswered question back out so the conversation stays truthful.
+        setConversation((turns) => turns.slice(0, -1))
         setError(describeError(askError))
       } finally {
         setBusy(null)

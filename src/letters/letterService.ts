@@ -260,5 +260,5 @@ export async function draftReply(
     system: prompts.DRAFT_REPLY_SYSTEM,
     prompt: prompts.DRAFT_REPLY_PROMPT(context.redactedText, redactedGoal.redacted),
   })
-  return { text: restore(result.text, redactedGoal.vault), source: result.source }
+  return { text: restore(result.text, redactedGoal.vault).trim(), source: result.source }
 }
