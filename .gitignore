@@ -30,3 +30,6 @@ dist-ssr
 .firebase/
 .firebaserc
 .remember/
+
+# Editor tooling
+.cursor/
