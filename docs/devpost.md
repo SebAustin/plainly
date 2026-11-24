@@ -12,7 +12,7 @@ Official mail, in plain words. Your letter is read on your device; the cloud onl
 
 ## Platform
 
-Web (Chrome), with Gemini Nano through Firebase AI Logic.
+Web (Chrome), with Gemini Nano through Firebase AI Logic. Also an iOS app, with Apple Foundation Models through Firebase AI Logic.
 
 ## Links
 
@@ -72,13 +72,27 @@ Other Firebase products:
 - **Remote Config** sets the cloud model name and the on-device token budget without a redeploy.
 - **Firebase Hosting** serves the app with a Content Security Policy.
 
-The app is React, TypeScript and Vite. The routing, redaction and parsing logic is pure and covered by 39 unit tests. One group of tests runs the full flows against a recording fake model and asserts that no name or email appears in anything sent to the cloud.
+The web app is React, TypeScript and Vite. The routing, redaction and parsing logic is pure and covered by 39 unit tests. One group of tests runs the full flows against a recording fake model and asserts that no name or email appears in anything sent to the cloud.
+
+### The same privacy gate on iOS
+
+Plainly also has a native iOS app (SwiftUI, in `ios/` in the repo), using Firebase AI Logic's hybrid inference for Apple platforms. Apple's on-device Foundation Model reads the letter and lists names and addresses; Gemini answers follow-up questions in the cloud, after redaction. Each task is given one model on a `GenerativeModelSession`: the on-device system model alone, Gemini alone, or a `HybridModel` with the device first for reply drafting. The "On this device" stamp comes from the model version the SDK reports for each answer.
+
+The routing, redaction and parsing logic is ported to a pure Swift package with 46 tests, including the same "nothing personal reaches the cloud" checks. A few things are different on iOS:
+
+- **Photos are read with Apple's Vision framework.** The on-device model takes text only, so a photographed letter becomes text on the phone and the picture is never uploaded.
+- **The reader is asked before details can leave the phone.** On an iPhone without Apple Intelligence, or when the on-device model's list of names can't be read, Plainly can only hide emails and phone, ID and account numbers. It then asks before sending anything, and says the name and address would be sent.
+- **No structured output on device.** Apple's default content guardrails rejected ordinary medical bills when the on-device model was held to a schema, so on the device it fills in a JSON template instead, and the cloud uses a schema. Both answers are validated before anything is shown.
+
+The iOS app has been run in the simulator with Apple's real on-device model reading the sample letter.
 
 ## Challenges we ran into
 
 - **The SDK doesn't translate schemas for the on-device model.** Cloud structured output is configured in `generationConfig`, but the on-device path needs the schema passed again as a Prompt API `responseConstraint`. We define it once and hand it to both.
 - **Models tidy what they copy.** Gemini Nano returned an address on one line with commas, while the letter split it over three lines, so the first redaction pass missed it. The privacy receipt is what exposed this during testing. Matching is now tolerant of whitespace and commas, with a regression test.
 - **"Prefer" modes are wrong for private input.** `PREFER_ON_DEVICE` falls back to the cloud without telling you. For raw letters we use `ONLY_ON_DEVICE`, which waits for the model instead of leaking.
+- **Guardrails differ between platforms.** On iOS, the on-device model refused a medical bill as "may contain sensitive content" whenever its answer was held to a schema. The fix was to use the relaxed guardrail setting Apple provides for explaining a user's own text, which only applies to plain-text answers, and have the model fill in a JSON template that is validated afterwards.
+- **"Couldn't read the answer" is not "no names found".** Porting to iOS showed that an unreadable list of names was being treated as an empty one, so the cloud could have received a name while the app said it was hidden. Both apps now treat the two differently: they retry once, then ask the reader before sending anything with names visible.
 - **Keeping a multi-turn chat consistent.** A follow-up question can mention the same person as the letter. Redaction reuses the letter's placeholder table so the cloud sees `[NAME_1]` every time, never two labels for one person.
 
 ## Accomplishments that we're proud of
@@ -95,7 +109,7 @@ Hybrid inference is more useful as a routing decision than as a fallback. Asking
 
 - Letters in other languages, with explanations in the reader's own language.
 - Better handling of real phone photos: skew, shadows and multi-page letters.
-- An iOS app using Apple Foundation Models through the same Firebase AI Logic routing.
+- Finish the iOS app: test cloud answers and real camera photos on a physical iPhone, then publish it.
 - Calendar reminders for tracked deadlines.
 
 ## Limits (stated honestly)
@@ -106,7 +120,7 @@ Hybrid inference is more useful as a routing decision than as a fallback. Asking
 
 ## Built with
 
-Firebase AI Logic (hybrid inference), Gemini Nano in Chrome, Gemini Developer API, Firebase App Check, Firebase Authentication, Cloud Firestore, Firebase Remote Config, Firebase Hosting, React, TypeScript, Vite, Zod, Vitest.
+Firebase AI Logic (hybrid inference), Gemini Nano in Chrome, Apple Foundation Models, Gemini Developer API, Firebase App Check, Firebase Authentication, Cloud Firestore, Firebase Remote Config, Firebase Hosting, React, TypeScript, Vite, Zod, Vitest, Swift, SwiftUI, Apple Vision.
 
 ## What was built during the submission period
 
@@ -121,3 +135,5 @@ Everything. Plainly is a new project started on November 19, 2026; there was no 
 5. Try **Draft a reply** and **Track this deadline**.
 
 No login is needed. Without the on-device model the app still runs: pasted text is sent to the cloud after pattern-based redaction, and the receipt shows it.
+
+The iOS app is not on the App Store. To try it, open `ios/Plainly.xcodeproj` in Xcode 26.2 or newer and run it on an iOS 26 simulator. Without a Firebase config file it starts in a clearly labelled demo mode with canned answers; `ios/README.md` explains how to connect it to a Firebase project for real models. On-device reading needs Apple Intelligence on the Mac or device.

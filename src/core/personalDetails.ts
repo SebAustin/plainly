@@ -22,12 +22,13 @@ export const PERSONAL_DETAILS_JSON_SCHEMA: Record<string, unknown> =
   z.toJSONSchema(personalDetailsSchema)
 
 /**
- * Returns the entities the model found. A malformed answer yields an empty
- * list: pattern-based redaction still runs, and the UI reports the lower level.
+ * Returns the entities the model found, or null when its answer could not be
+ * read. Null is not "nobody is named": the caller must not treat the text as
+ * cleaned of names and addresses.
  */
-export function parsePersonalDetails(raw: string): DetectedEntity[] {
+export function parsePersonalDetails(raw: string): DetectedEntity[] | null {
   const json = parseJson(raw)
-  if (!json.ok) return []
+  if (!json.ok) return null
   const parsed = personalDetailsSchema.safeParse(json.value)
-  return parsed.success ? parsed.data.entities : []
+  return parsed.success ? parsed.data.entities : null
 }

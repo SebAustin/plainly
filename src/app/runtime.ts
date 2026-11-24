@@ -28,7 +28,12 @@ export function createRuntime(): Runtime {
   if (isFixtureRequested()) {
     return {
       kind: 'fixture',
-      inference: createFixtureInference(),
+      // ?fixture=unreadable-names makes the canned on-device model fail to list
+      // names, to exercise the consent prompt.
+      inference: createFixtureInference({
+        unreadableNames:
+          new URLSearchParams(window.location.search).get('fixture') === 'unreadable-names',
+      }),
       deadlineStore: null,
       deviceTokenBudget: Promise.resolve(REMOTE_CONFIG_DEFAULTS.device_token_budget),
     }

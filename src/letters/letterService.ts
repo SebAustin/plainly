@@ -34,6 +34,19 @@ export interface CloudContext {
   redactedText: string
   vault: Vault
   level: RedactionLevel
+  /**
+   * The on-device model was asked for names and addresses but its answer could
+   * not be read, so only pattern rules ran. Sending needs the reader's consent.
+   */
+  unreadableNames: boolean
+}
+
+/** Thrown when text would reach the cloud with names visible and the reader has not agreed. */
+export class NeedsCloudConsentError extends Error {
+  constructor() {
+    super('Names and addresses could not be hidden; the reader has to agree before sending.')
+    this.name = 'NeedsCloudConsentError'
+  }
 }
 
 export interface DecodedLetter {
@@ -56,6 +69,7 @@ export interface FollowUpReply {
 }
 
 const MAX_DECODE_ATTEMPTS = 2
+const MAX_PERSONAL_DETAILS_ATTEMPTS = 2
 const CHARACTERS_PER_TOKEN = 4
 
 function shapeOf(input: LetterInput): LetterInputShape {
@@ -77,15 +91,12 @@ function splitIntoChunks(text: string, size: number): string[] {
   return chunks
 }
 
-/** Asks the on-device model for names and addresses, one budget-sized chunk at a time. */
-async function findPersonalDetails(
-  text: string,
-  environment: Environment,
+/** Asks the on-device model for one chunk's names and addresses; null if no attempt was readable. */
+async function personalDetailsIn(
+  chunk: string,
   inference: Inference,
-): Promise<DetectedEntity[]> {
-  const chunkSize = environment.deviceTokenBudget * CHARACTERS_PER_TOKEN
-  const found: DetectedEntity[] = []
-  for (const chunk of splitIntoChunks(text, chunkSize)) {
+): Promise<DetectedEntity[] | null> {
+  for (let attempt = 0; attempt < MAX_PERSONAL_DETAILS_ATTEMPTS; attempt += 1) {
     const result = await inference.generate({
       task: 'Find personal details',
       mode: 'only_on_device',
@@ -93,21 +104,56 @@ async function findPersonalDetails(
       prompt: prompts.PERSONAL_DETAILS_PROMPT(chunk),
       jsonSchema: PERSONAL_DETAILS_JSON_SCHEMA,
     })
-    found.push(...parsePersonalDetails(result.text))
+    const found = parsePersonalDetails(result.text)
+    if (found) return found
+  }
+  return null
+}
+
+/**
+ * Asks the on-device model for names and addresses, one budget-sized chunk at
+ * a time. Returns null if any chunk could not be read.
+ */
+async function findPersonalDetails(
+  text: string,
+  environment: Environment,
+  inference: Inference,
+): Promise<DetectedEntity[] | null> {
+  const chunkSize = environment.deviceTokenBudget * CHARACTERS_PER_TOKEN
+  const found: DetectedEntity[] = []
+  for (const chunk of splitIntoChunks(text, chunkSize)) {
+    const entities = await personalDetailsIn(chunk, inference)
+    if (!entities) return null
+    found.push(...entities)
   }
   return found
 }
 
+/**
+ * Redacts text for the cloud. If the on-device model was meant to find names
+ * but its answer could not be read, the context says so honestly: it is marked
+ * pattern-rules only, and sending it then needs the reader's consent.
+ */
 async function redactForCloud(
   text: string,
   level: RedactionLevel,
   environment: Environment,
   inference: Inference,
 ): Promise<CloudContext> {
-  const entities =
+  const found =
     level === 'device-assisted' ? await findPersonalDetails(text, environment, inference) : []
-  const { redacted, vault } = redact(text, entities)
-  return { redactedText: redacted, vault, level }
+  const unreadableNames = found === null
+  const { redacted, vault } = redact(text, found ?? [])
+  return {
+    redactedText: redacted,
+    vault,
+    level: unreadableNames ? 'rules-only' : level,
+    unreadableNames,
+  }
+}
+
+function needsConsent(context: CloudContext, hasCloudConsent: boolean): boolean {
+  return context.unreadableNames && !hasCloudConsent
 }
 
 function restoreDecode(decode: Decode, vault: Vault): Decode {
@@ -166,6 +212,9 @@ export async function decodeLetter(
     input.kind === 'text'
       ? await redactForCloud(input.text, route.redaction, environment, inference)
       : null
+  if (cloudContext && needsConsent(cloudContext, environment.hasCloudConsent)) {
+    return { ok: false, reason: 'needs-cloud-consent' }
+  }
   const result = await generateDecode(
     decodeRequest(input, route.mode, cloudContext?.redactedText),
     inference,
@@ -219,7 +268,9 @@ export async function askFollowUp(
   history: readonly ChatTurn[],
   question: string,
   inference: Inference,
+  hasCloudConsent = false,
 ): Promise<FollowUpReply> {
+  if (needsConsent(context, hasCloudConsent)) throw new NeedsCloudConsentError()
   const { redacted, vault } = redact(question, [], context.vault)
   const result = await inference.chat({
     task: 'Answer a question',
@@ -252,6 +303,8 @@ export async function draftReply(
   const route = chooseRoute({ kind: 'draft-reply' }, environment)
   if (route.run === 'blocked') return { blocked: route.reason }
   if (route.run === 'cloud') throw new Error('Reply drafting never forces the cloud.')
+  // A prefer-on-device draft may still fall back to the cloud.
+  if (needsConsent(context, environment.hasCloudConsent)) return { blocked: 'needs-cloud-consent' }
 
   const redactedGoal = redact(goal, [], context.vault)
   const result = await inference.generate({

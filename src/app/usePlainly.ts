@@ -9,6 +9,7 @@ import {
   askFollowUp,
   decodeLetter,
   draftReply,
+  NeedsCloudConsentError,
   prepareCloudContext,
   type CloudContext,
   type DecodedLetter,
@@ -28,6 +29,19 @@ export interface Draft {
 }
 
 type Busy = 'reading' | 'asking' | 'drafting' | 'tracking' | null
+
+/**
+ * Something waiting for the reader's yes before it reaches the cloud:
+ * a photo or PDF that cannot be redacted, or text whose names and addresses
+ * the on-device model could not find.
+ */
+export interface ConsentRequest {
+  reason: 'file' | 'names'
+  action:
+    | { kind: 'read'; input: LetterInput }
+    | { kind: 'ask'; question: string }
+    | { kind: 'draft'; goal: string }
+}
 
 const MESSAGES: Record<BlockReason | 'unreadable-answer' | 'failed', string> = {
   offline:
@@ -56,7 +70,9 @@ export function usePlainly() {
   )
   const [busy, setBusy] = useState<Busy>(null)
   const [error, setError] = useState<string | null>(null)
-  const [pendingConsent, setPendingConsent] = useState<LetterInput | null>(null)
+  const [pendingConsent, setPendingConsent] = useState<ConsentRequest | null>(null)
+  /** The reader agreed to send this letter with names visible. Reset for each new letter. */
+  const [namesConsent, setNamesConsent] = useState(false)
   const [input, setInput] = useState<LetterInput | null>(null)
   const [letter, setLetter] = useState<DecodedLetter | null>(null)
   const [context, setContext] = useState<CloudContext | null>(null)
@@ -126,13 +142,17 @@ export function usePlainly() {
       setIsTracked(false)
       setReceipt([])
       setInput(nextInput)
+      setNamesConsent(hasCloudConsent)
       try {
         const result = await decodeLetter(nextInput, environment(hasCloudConsent), inference)
         if (result.ok) {
           setLetter(result.letter)
           setContext(result.letter.cloudContext)
         } else if (result.reason === 'needs-cloud-consent') {
-          setPendingConsent(nextInput)
+          setPendingConsent({
+            reason: nextInput.kind === 'text' ? 'names' : 'file',
+            action: { kind: 'read', input: nextInput },
+          })
         } else {
           setError(MESSAGES[result.reason])
         }
@@ -155,7 +175,7 @@ export function usePlainly() {
   }, [context, inference, input, letter, environment])
 
   const ask = useCallback(
-    async (question: string) => {
+    async (question: string, hasCloudConsent = false): Promise<void> => {
       if (!inference) return
       if (!isOnline) return setError(MESSAGES.offline)
       setBusy('asking')
@@ -164,40 +184,71 @@ export function usePlainly() {
       try {
         const prepared = await ensureContext()
         if (!prepared) return
-        const reply = await askFollowUp(prepared, cloudHistory, question, inference)
+        const reply = await askFollowUp(
+          prepared,
+          cloudHistory,
+          question,
+          inference,
+          hasCloudConsent || namesConsent,
+        )
         setContext(reply.context)
         setCloudHistory((turns) => [...turns, ...reply.cloudTurns])
         setConversation((turns) => [...turns, { role: 'plainly', text: reply.answer }])
       } catch (askError) {
         // Take the unanswered question back out so the conversation stays truthful.
         setConversation((turns) => turns.slice(0, -1))
-        setError(describeError(askError))
+        if (askError instanceof NeedsCloudConsentError) {
+          setPendingConsent({ reason: 'names', action: { kind: 'ask', question } })
+        } else {
+          setError(describeError(askError))
+        }
       } finally {
         setBusy(null)
       }
     },
-    [inference, isOnline, ensureContext, cloudHistory],
+    [inference, isOnline, ensureContext, cloudHistory, namesConsent],
   )
 
   const writeDraft = useCallback(
-    async (goal: string) => {
+    async (goal: string, hasCloudConsent = false): Promise<void> => {
       if (!inference) return
       setBusy('drafting')
       setError(null)
       try {
         const prepared = await ensureContext()
         if (!prepared) return
-        const result = await draftReply(prepared, goal, environment(false), inference)
-        if ('blocked' in result) setError(MESSAGES[result.blocked])
-        else setDraft(result)
+        const result = await draftReply(
+          prepared,
+          goal,
+          environment(hasCloudConsent || namesConsent),
+          inference,
+        )
+        if ('blocked' in result && result.blocked === 'needs-cloud-consent') {
+          setPendingConsent({ reason: 'names', action: { kind: 'draft', goal } })
+        } else if ('blocked' in result) {
+          setError(MESSAGES[result.blocked])
+        } else {
+          setDraft(result)
+        }
       } catch (draftError) {
         setError(describeError(draftError))
       } finally {
         setBusy(null)
       }
     },
-    [inference, ensureContext, environment],
+    [inference, ensureContext, environment, namesConsent],
   )
+
+  /** The reader said yes: remember it for this letter and run what was waiting. */
+  const acceptConsent = useCallback(() => {
+    if (!pendingConsent) return
+    const { action } = pendingConsent
+    setPendingConsent(null)
+    setNamesConsent(true)
+    if (action.kind === 'read') void read(action.input, true)
+    else if (action.kind === 'ask') void ask(action.question, true)
+    else void writeDraft(action.goal, true)
+  }, [pendingConsent, read, ask, writeDraft])
 
   const downloadDeviceModel = useCallback(async () => {
     if (runtime.kind === 'unconfigured') return
@@ -261,6 +312,7 @@ export function usePlainly() {
     downloadDeviceModel,
     trackDeadline,
     removeDeadline,
+    acceptConsent,
     dismissConsent: () => setPendingConsent(null),
   }
 }

@@ -9,6 +9,8 @@ interface FollowUpProps {
   isAsking: boolean
   isDrafting: boolean
   isOnline: boolean
+  /** False when only pattern rules can hide details, so names and addresses would be sent. */
+  namesHidden: boolean
   onAsk: (question: string) => void
   onDraft: (goal: string) => void
 }
@@ -27,6 +29,7 @@ export function FollowUp({
   isAsking,
   isDrafting,
   isOnline,
+  namesHidden,
   onAsk,
   onDraft,
 }: FollowUpProps) {
@@ -45,8 +48,9 @@ export function FollowUp({
     <section className="followup" aria-labelledby="followup-heading">
       <h3 id="followup-heading">Ask about this letter</h3>
       <p className="followup-note">
-        Questions go to the cloud model. Names, addresses and account numbers are hidden first, then put
-        back in the answer on this device.
+        {namesHidden
+          ? 'Questions go to the cloud model. Names, addresses and account numbers are hidden first, then put back in the answer on this device.'
+          : 'Questions go to the cloud model. Only email addresses and phone, ID and account numbers can be hidden: names and addresses cannot.'}
       </p>
 
       {conversation.length > 0 && (

@@ -36,18 +36,22 @@ const CANNED_ENTITIES = {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-function answerFor(request: GenerateRequest): string {
+const UNREADABLE_ENTITIES = 'The names in this letter are Maria Okafor.'
+
+function answerFor(request: GenerateRequest, unreadableNames: boolean): string {
   if (request.jsonSchema === DECODE_JSON_SCHEMA) return JSON.stringify(CANNED_DECODE)
-  if (request.jsonSchema === PERSONAL_DETAILS_JSON_SCHEMA) return JSON.stringify(CANNED_ENTITIES)
+  if (request.jsonSchema === PERSONAL_DETAILS_JSON_SCHEMA) {
+    return unreadableNames ? UNREADABLE_ENTITIES : JSON.stringify(CANNED_ENTITIES)
+  }
   return 'Dear Billing Office,\n\nI am writing about my account. [YOUR REQUEST]\n\nThank you,\n[NAME_1]'
 }
 
-export function createFixtureInference(): Inference {
+export function createFixtureInference({ unreadableNames = false } = {}): Inference {
   return {
     async generate(request): Promise<InferenceResult> {
       await wait(FIXTURE_DELAY_MS)
       return {
-        text: answerFor(request),
+        text: answerFor(request, unreadableNames),
         source: request.mode === 'only_in_cloud' ? 'in_cloud' : 'on_device',
       }
     },

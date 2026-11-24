@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { usePlainly } from './app/usePlainly'
 import { Composer } from './features/composer/Composer'
 import { DeadlineList } from './features/deadlines/DeadlineList'
@@ -44,6 +45,17 @@ function SetupNotice() {
 
 export default function App() {
   const plainly = usePlainly()
+  const consentButton = useRef<HTMLButtonElement>(null)
+
+  // A consent question can appear far from where the reader clicked (asking a
+  // question lower on the page), so bring it into view and give it focus.
+  useEffect(() => {
+    const button = consentButton.current
+    if (!plainly.pendingConsent || !button) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    button.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' })
+    button.focus({ preventScroll: true })
+  }, [plainly.pendingConsent])
   const { letter } = plainly
 
   return (
@@ -91,7 +103,7 @@ export default function App() {
             </p>
           )}
 
-          {plainly.pendingConsent && (
+          {plainly.pendingConsent?.reason === 'file' && (
             <section className="notice" role="alertdialog" aria-labelledby="consent-heading">
               <h2 id="consent-heading">This file can't be read on this device</h2>
               <p>
@@ -101,11 +113,36 @@ export default function App() {
               </p>
               <div className="composer-actions">
                 <button
+                  ref={consentButton}
                   type="button"
                   className="button-primary"
-                  onClick={() => plainly.pendingConsent && void plainly.read(plainly.pendingConsent, true)}
+                  onClick={plainly.acceptConsent}
                 >
                   Send this file to the cloud
+                </button>
+                <button type="button" className="button-quiet" onClick={plainly.dismissConsent}>
+                  Keep it here
+                </button>
+              </div>
+            </section>
+          )}
+
+          {plainly.pendingConsent?.reason === 'names' && (
+            <section className="notice" role="alertdialog" aria-labelledby="consent-heading">
+              <h2 id="consent-heading">Names and addresses couldn't be hidden</h2>
+              <p>
+                The on-device model's list of names couldn't be read, so Plainly can only hide email
+                addresses and phone, ID and account numbers. If you continue, your name and address will
+                be sent to Google's Gemini in the cloud.
+              </p>
+              <div className="composer-actions">
+                <button
+                  ref={consentButton}
+                  type="button"
+                  className="button-primary"
+                  onClick={plainly.acceptConsent}
+                >
+                  Send to the cloud
                 </button>
                 <button type="button" className="button-quiet" onClick={plainly.dismissConsent}>
                   Keep it here
@@ -131,6 +168,11 @@ export default function App() {
                 isAsking={plainly.busy === 'asking'}
                 isDrafting={plainly.busy === 'drafting'}
                 isOnline={plainly.isOnline}
+                namesHidden={
+                  plainly.context
+                    ? plainly.context.level === 'device-assisted'
+                    : plainly.deviceModel !== 'unavailable'
+                }
                 onAsk={(question) => void plainly.ask(question)}
                 onDraft={(goal) => void plainly.writeDraft(goal)}
               />

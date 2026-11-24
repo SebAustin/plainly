@@ -6,7 +6,13 @@ import type {
   Inference,
   InferenceResult,
 } from '../inference/inference'
-import { askFollowUp, decodeLetter, prepareCloudContext } from './letterService'
+import {
+  askFollowUp,
+  decodeLetter,
+  draftReply,
+  NeedsCloudConsentError,
+  prepareCloudContext,
+} from './letterService'
 import { DECODE_JSON_SCHEMA } from '../core/decode'
 
 const LETTER =
@@ -161,5 +167,80 @@ describe('prepareCloudContext', () => {
     expect(context.redactedText).toContain('[EMAIL_1]')
     expect(context.redactedText).toContain('Maria Okafor')
     expect(model.generated).toEqual([])
+  })
+})
+
+const UNREADABLE_DETAILS = 'Here are the names: Maria Okafor'
+
+const answerWithUnreadableDetails = (request: GenerateRequest): string =>
+  request.jsonSchema === DECODE_JSON_SCHEMA
+    ? decodeAnswer(request.mode === 'only_in_cloud' ? '[NAME_1]' : 'Maria Okafor')
+    : UNREADABLE_DETAILS
+
+const findCalls = (requests: GenerateRequest[]) =>
+  requests.filter((request) => request.task === 'Find personal details').length
+
+describe('when the on-device list of names cannot be read', () => {
+  test('it is retried once, then the context is marked pattern-rules only', async () => {
+    const model = fakeInference(answerWithUnreadableDetails)
+
+    const context = await prepareCloudContext({ kind: 'text', text: LETTER }, environment, model.inference)
+
+    expect(findCalls(model.generated)).toBe(2)
+    expect(context).toMatchObject({ level: 'rules-only', unreadableNames: true })
+  })
+
+  test('an empty list is a valid answer and keeps device-assisted redaction', async () => {
+    const model = fakeInference((request) =>
+      request.jsonSchema === DECODE_JSON_SCHEMA ? decodeAnswer('x') : '{"entities":[]}',
+    )
+
+    const context = await prepareCloudContext({ kind: 'text', text: LETTER }, environment, model.inference)
+
+    expect(findCalls(model.generated)).toBe(1)
+    expect(context).toMatchObject({ level: 'device-assisted', unreadableNames: false })
+  })
+
+  test('a long letter is not sent to the cloud until the reader agrees', async () => {
+    const model = fakeInference(answerWithUnreadableDetails)
+    const tightBudget = { ...environment, deviceTokenBudget: 10 }
+
+    const result = await decodeLetter({ kind: 'text', text: LETTER }, tightBudget, model.inference)
+
+    expect(result).toEqual({ ok: false, reason: 'needs-cloud-consent' })
+    expect(model.sentToCloud()).toBe('')
+  })
+
+  test('with consent the long letter is sent, marked pattern-rules only', async () => {
+    const model = fakeInference(answerWithUnreadableDetails)
+    const agreed = { ...environment, deviceTokenBudget: 10, hasCloudConsent: true }
+
+    const result = await decodeLetter({ kind: 'text', text: LETTER }, agreed, model.inference)
+
+    expect(result).toMatchObject({ ok: true, letter: { cloudContext: { level: 'rules-only' } } })
+    expect(model.sentToCloud()).not.toContain('billing@northgate.org')
+  })
+
+  test('a question is not sent until the reader agrees', async () => {
+    const model = fakeInference(answerWithUnreadableDetails, 'ok')
+    const context = await prepareCloudContext({ kind: 'text', text: LETTER }, environment, model.inference)
+
+    await expect(askFollowUp(context, [], 'Why?', model.inference)).rejects.toBeInstanceOf(
+      NeedsCloudConsentError,
+    )
+    expect(model.chats).toEqual([])
+
+    await askFollowUp(context, [], 'Why?', model.inference, true)
+    expect(model.chats).toHaveLength(1)
+  })
+
+  test('a reply is not drafted until the reader agrees', async () => {
+    const model = fakeInference(answerWithUnreadableDetails)
+    const context = await prepareCloudContext({ kind: 'text', text: LETTER }, environment, model.inference)
+
+    const result = await draftReply(context, 'More time', environment, model.inference)
+
+    expect(result).toEqual({ blocked: 'needs-cloud-consent' })
+    expect(model.generated.filter((request) => request.task === 'Draft a reply')).toEqual([])
   })
 })
