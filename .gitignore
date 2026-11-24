@@ -33,3 +33,9 @@ dist-ssr
 
 # Editor tooling
 .cursor/
+
+# iOS
+ios/build/
+ios/PlainlyCore/.build/
+ios/GoogleService-Info.plist
+xcuserdata/

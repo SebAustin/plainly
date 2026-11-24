@@ -1,0 +1,47 @@
+name: Plainly
+options:
+  bundleIdPrefix: com.sebaustin
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 12.13.0
+  PlainlyCore:
+    path: PlainlyCore
+targets:
+  Plainly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Plainly
+    postBuildScripts:
+      - name: Copy Firebase config if present
+        basedOnDependencyAnalysis: false
+        script: |
+          # GoogleService-Info.plist is not committed. Without it the app runs in demo mode.
+          if [ -f "${SRCROOT}/GoogleService-Info.plist" ]; then
+            cp "${SRCROOT}/GoogleService-Info.plist" "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/"
+          fi
+    dependencies:
+      - package: PlainlyCore
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseAILogic
+      - package: Firebase
+        product: FirebaseAppCheck
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sebaustin.plainly
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Plainly
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        CODE_SIGNING_ALLOWED: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
