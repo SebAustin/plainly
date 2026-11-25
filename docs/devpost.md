@@ -85,7 +85,7 @@ The routing, redaction and parsing logic is ported to a pure Swift package with 
 - **No structured output on device.** Apple's default content guardrails rejected ordinary medical bills when the on-device model was held to a schema, so on the device it fills in a JSON template instead, and the cloud uses a schema. Both answers are validated before anything is shown.
 - **Readable by the people who need it most.** All text follows the iPhone's text size setting, up to the largest accessibility sizes. Deadlines are counted in the Gregorian calendar even on a phone set to the Buddhist or Japanese calendar, so the days-left figure stays right.
 
-The iOS app has been run in the simulator with Apple's real on-device model reading the sample letter, including at the largest text sizes.
+The iOS app has been run in the simulator with real models: Apple's on-device model reads the sample letter, including at the largest text sizes, and Gemini answers follow-up questions in the cloud. In that test the name, address, account number, phone number and email all reached the cloud as placeholders.
 
 ## Challenges we ran into
 
@@ -110,7 +110,7 @@ Hybrid inference is more useful as a routing decision than as a fallback. Asking
 
 - Letters in other languages, with explanations in the reader's own language.
 - Better handling of real phone photos: skew, shadows and multi-page letters.
-- Finish the iOS app: test cloud answers and real camera photos on a physical iPhone, then publish it.
+- Finish the iOS app: test it with real camera photos on a physical iPhone, then publish it.
 - Calendar reminders for tracked deadlines.
 
 ## Limits (stated honestly)
