@@ -19,21 +19,36 @@
 		5E733D852602B4D35BD1FA7E /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = 77B0852E55C8A4DE6239FBC5 /* FirebaseAILogic */; };
 		6783662CC860FB1F8EFA7A85 /* GeneratedShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA06FB28519D8DB8DD98763 /* GeneratedShapes.swift */; };
 		6C0B5731C49366451C1CE7B8 /* ComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6596D14959F566E9D437A2AE /* ComposerView.swift */; };
+		7D1B5A9DA02F8E47CD89FD54 /* PlainlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = C7B06510A8976DC7903A772E /* PlainlyCore */; };
 		8E41E0366274CB2A5125A993 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 151C0D1959EAED41AE235123 /* FirebaseAppCheck */; };
 		9A9DC8B9196DFA6A31811AC4 /* FollowUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11368F88C46DA1043B267DBD /* FollowUpView.swift */; };
 		D0BD4D5530513F2ADB5AE471 /* PlainlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = AFCF41B68E7CB08CA9B86631 /* PlainlyCore */; };
 		D1E4A24127D79E89613430EC /* Connectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E9CFAAC3EAA04B1CD77C0C /* Connectivity.swift */; };
+		E25664D3CD1F266081F09D73 /* LetterViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063CD75903A0E1972AFE7921 /* LetterViewModelTests.swift */; };
 		F245363FDEF9AD0F2A2930FF /* DecodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B8A7B23FF420577AE89528E /* DecodeView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1CD65269A32FBA0D8F482F31 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20F36C25DC03F8DB4795A8DF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DB8DAF05B5EBF6639E6E87DE;
+			remoteInfo = Plainly;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		063CD75903A0E1972AFE7921 /* LetterViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterViewModelTests.swift; sourceTree = "<group>"; };
 		0AA2EB8626816263E5B6E194 /* FixtureInference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureInference.swift; sourceTree = "<group>"; };
 		11368F88C46DA1043B267DBD /* FollowUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpView.swift; sourceTree = "<group>"; };
 		1A783A048FA351111986A8AF /* ReceiptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptView.swift; sourceTree = "<group>"; };
 		1FB859182E9DF0ECF5FF7992 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2AAF7C67FB1275ADD2CB8114 /* Plainly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Plainly.entitlements; sourceTree = "<group>"; };
 		330F5948315DFA265E6E86F2 /* FirebaseInference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseInference.swift; sourceTree = "<group>"; };
 		3B8A7B23FF420577AE89528E /* DecodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodeView.swift; sourceTree = "<group>"; };
 		48E9CFAAC3EAA04B1CD77C0C /* Connectivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connectivity.swift; sourceTree = "<group>"; };
+		52D8C2D29E0B6B6C97D1610B /* PlainlyTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PlainlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6596D14959F566E9D437A2AE /* ComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerView.swift; sourceTree = "<group>"; };
 		69B919C812896998C941606B /* PlainlyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PlainlyCore; path = PlainlyCore; sourceTree = SOURCE_ROOT; };
 		AD3F3BD5A4F023B87CD3E078 /* Plainly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Plainly.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -42,6 +57,7 @@
 		CFA06FB28519D8DB8DD98763 /* GeneratedShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedShapes.swift; sourceTree = "<group>"; };
 		E4513653C4B8C4DA180F844A /* LetterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterViewModel.swift; sourceTree = "<group>"; };
 		F3BCEBEC9C311B7AE75F0B41 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		"TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +69,14 @@
 				4D5F2068E2CDBBD82368038E /* FirebaseCore in Frameworks */,
 				5E733D852602B4D35BD1FA7E /* FirebaseAILogic in Frameworks */,
 				8E41E0366274CB2A5125A993 /* FirebaseAppCheck in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81D7E214FBD472C8E9008670 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D1B5A9DA02F8E47CD89FD54 /* PlainlyCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,11 +103,20 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		3C7DFB2F612FD5A081C2D000 /* PlainlyTests */ = {
+			isa = PBXGroup;
+			children = (
+				063CD75903A0E1972AFE7921 /* LetterViewModelTests.swift */,
+			);
+			path = PlainlyTests;
+			sourceTree = "<group>";
+		};
 		7342657FB1A55A2F8E3B4887 = {
 			isa = PBXGroup;
 			children = (
 				070639CD04F9852E34939F7B /* Packages */,
 				E6B8E389BE8E726D481CE653 /* Plainly */,
+				3C7DFB2F612FD5A081C2D000 /* PlainlyTests */,
 				869EA2D3DBA9E00A2344C8FB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -104,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				AD3F3BD5A4F023B87CD3E078 /* Plainly.app */,
+				52D8C2D29E0B6B6C97D1610B /* PlainlyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -112,12 +146,21 @@
 			isa = PBXGroup;
 			children = (
 				E4513653C4B8C4DA180F844A /* LetterViewModel.swift */,
+				2AAF7C67FB1275ADD2CB8114 /* Plainly.entitlements */,
 				B244453E3EBAA7BA043033C7 /* PlainlyApp.swift */,
 				F3BCEBEC9C311B7AE75F0B41 /* Theme.swift */,
 				846E7B79EE777EE0D0CCAC31 /* Services */,
 				16E8F6028A1E8705B7F8B7C2 /* Views */,
 			);
 			path = Plainly;
+			sourceTree = "<group>";
+		};
+		"TEMP_EF250B30-8D2C-41BA-9C3A-CF0CB0F2B71A" /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */,
+			);
+			path = ios;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -146,6 +189,26 @@
 			productReference = AD3F3BD5A4F023B87CD3E078 /* Plainly.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F40E581D914A6D39F9BE4BDF /* PlainlyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29E7CD5E2A71B9682661E18C /* Build configuration list for PBXNativeTarget "PlainlyTests" */;
+			buildPhases = (
+				084119B0C86BC8E551CE8BE9 /* Sources */,
+				81D7E214FBD472C8E9008670 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1E01E4D951C978F254D45AD8 /* PBXTargetDependency */,
+			);
+			name = PlainlyTests;
+			packageProductDependencies = (
+				C7B06510A8976DC7903A772E /* PlainlyCore */,
+			);
+			productName = PlainlyTests;
+			productReference = 52D8C2D29E0B6B6C97D1610B /* PlainlyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -155,6 +218,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					DB8DAF05B5EBF6639E6E87DE = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = E2C37FC5FF586571FA936FDD /* Build configuration list for PBXProject "Plainly" */;
@@ -176,6 +242,7 @@
 			projectRoot = "";
 			targets = (
 				DB8DAF05B5EBF6639E6E87DE /* Plainly */,
+				F40E581D914A6D39F9BE4BDF /* PlainlyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -203,6 +270,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		084119B0C86BC8E551CE8BE9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E25664D3CD1F266081F09D73 /* LetterViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AD0A52C65C62907F0B5496A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,6 +299,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1E01E4D951C978F254D45AD8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DB8DAF05B5EBF6639E6E87DE /* Plainly */;
+			targetProxy = 1CD65269A32FBA0D8F482F31 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		2BE9117F22A440C8ECD8AB4D /* Release */ = {
@@ -282,12 +365,32 @@
 			};
 			name = Release;
 		};
-		6542BBD434AC6D0E5C61606C /* Release */ = {
+		319ADEEE87645E081BEE9A52 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sebaustin.plainly.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Plainly.app/Plainly";
+			};
+			name = Release;
+		};
+		6542BBD434AC6D0E5C61606C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */;
+			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = Plainly/Plainly.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -371,10 +474,12 @@
 		};
 		C7E56C05590A1D6451B77537 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = Plainly/Plainly.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -393,9 +498,36 @@
 			};
 			name = Debug;
 		};
+		FE597890F2990798DD2F082C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sebaustin.plainly.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Plainly.app/Plainly";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		29E7CD5E2A71B9682661E18C /* Build configuration list for PBXNativeTarget "PlainlyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE597890F2990798DD2F082C /* Debug */,
+				319ADEEE87645E081BEE9A52 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		41FA36D5969C654303E1C5F4 /* Build configuration list for PBXNativeTarget "Plainly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -451,6 +583,10 @@
 			productName = FirebaseAILogic;
 		};
 		AFCF41B68E7CB08CA9B86631 /* PlainlyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlainlyCore;
+		};
+		C7B06510A8976DC7903A772E /* PlainlyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlainlyCore;
 		};

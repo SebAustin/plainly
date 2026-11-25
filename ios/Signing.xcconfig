@@ -1,0 +1,11 @@
+// Signing for running Plainly on a real iPhone.
+//
+// Simulator builds need nothing here. For a device, create Local.xcconfig next
+// to this file (it is git-ignored) containing your Apple developer team ID:
+//
+//   DEVELOPMENT_TEAM = ABCDE12345
+//
+// Xcode's automatic signing then creates the provisioning profile, including
+// the App Attest capability the Release build needs.
+
+#include? "Local.xcconfig"

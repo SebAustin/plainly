@@ -15,14 +15,14 @@ struct ComposerView: View {
         ZStack(alignment: .topLeading) {
           if model.letterText.isEmpty {
             Text("Paste the letter here, or add a photo of it.")
-              .font(.system(size: 14, design: .monospaced))
+              .font(Theme.mono(14))
               .foregroundStyle(Theme.inkSoft.opacity(0.7))
               .padding(.top, 8)
               .padding(.leading, 5)
               .allowsHitTesting(false)
           }
           TextEditor(text: $model.letterText)
-            .font(.system(size: 14, design: .monospaced))
+            .font(Theme.mono(14))
             .foregroundStyle(Theme.ink)
             .scrollContentBackground(.hidden)
             .focused($isEditing)
@@ -40,29 +40,10 @@ struct ComposerView: View {
         }
         .overlay(alignment: .bottom) { Rectangle().fill(Theme.rule).frame(height: 1) }
 
-        HStack(spacing: 10) {
-          Button {
-            isEditing = false
-            Task { await model.explain() }
-          } label: {
-            if model.isReading {
-              HStack(spacing: 8) { ProgressView().tint(Theme.sheet); Text("Reading…") }
-            } else {
-              Text("Explain this letter")
-            }
-          }
-          .buttonStyle(InkButtonStyle())
-          .disabled(!model.canExplain)
-
-          PhotosPicker(selection: $photo, matching: .images) {
-            if model.isRecognizing {
-              HStack(spacing: 8) { ProgressView(); Text("Reading photo…") }
-            } else {
-              Text("Add a photo")
-            }
-          }
-          .buttonStyle(InkButtonStyle(filled: false))
-          .disabled(model.isRecognizing)
+        // Side by side when both labels fit; stacked at large text sizes.
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 10) { actions }
+          VStack(alignment: .leading, spacing: 10) { actions }
         }
 
         Button("Use a sample letter") { model.useSampleLetter() }
@@ -85,5 +66,30 @@ struct ComposerView: View {
         photo = nil
       }
     }
+  }
+
+  @ViewBuilder private var actions: some View {
+          Button {
+            isEditing = false
+            Task { await model.explain() }
+          } label: {
+            if model.isReading {
+              HStack(spacing: 8) { ProgressView().tint(Theme.sheet); Text("Reading…") }
+            } else {
+              Text("Explain this letter")
+            }
+          }
+          .buttonStyle(InkButtonStyle())
+          .disabled(!model.canExplain)
+
+          PhotosPicker(selection: $photo, matching: .images) {
+            if model.isRecognizing {
+              HStack(spacing: 8) { ProgressView(); Text("Reading photo…") }
+            } else {
+              Text("Add a photo")
+            }
+          }
+          .buttonStyle(InkButtonStyle(filled: false))
+          .disabled(model.isRecognizing)
   }
 }

@@ -13,12 +13,73 @@ enum Theme {
   static let urgent = Color(red: 0.761, green: 0.255, blue: 0.165)
   static let redaction = Color(red: 0.082, green: 0.090, blue: 0.114)
 
-  static func display(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-    .system(size: size, weight: weight, design: .serif)
+  static func display(_ size: CGFloat, weight: Font.Weight = .medium) -> ThemeFont {
+    ThemeFont(size: size, weight: weight, design: .serif)
   }
 
-  static func label(_ size: CGFloat = 11) -> Font {
-    .system(size: size, weight: .medium, design: .monospaced)
+  static func label(_ size: CGFloat = 11) -> ThemeFont {
+    ThemeFont(size: size, weight: .medium, design: .monospaced)
+  }
+
+  static func mono(_ size: CGFloat) -> ThemeFont {
+    ThemeFont(size: size, weight: .regular, design: .monospaced)
+  }
+
+  static func text(_ size: CGFloat, weight: Font.Weight = .regular) -> ThemeFont {
+    ThemeFont(size: size, weight: weight, design: .default)
+  }
+}
+
+/// A font from the theme's type scale. Sizes are the design at the default
+/// text size; applied with `.font(_:)` they grow with the reader's text size
+/// setting, which matters for the older readers Plainly is written for.
+struct ThemeFont {
+  var size: CGFloat
+  var weight: Font.Weight
+  var design: Font.Design
+  var isItalic = false
+
+  func italic() -> ThemeFont {
+    var copy = self
+    copy.isItalic = true
+    return copy
+  }
+
+  func weight(_ weight: Font.Weight) -> ThemeFont {
+    var copy = self
+    copy.weight = weight
+    return copy
+  }
+
+  /// Large display type grows more slowly than body text, as Apple's styles do.
+  var scalesLike: Font.TextStyle {
+    switch size {
+    case 28...: .largeTitle
+    case 20..<28: .title3
+    case 15..<20: .body
+    default: .caption
+    }
+  }
+}
+
+private struct ScaledThemeFont: ViewModifier {
+  let font: ThemeFont
+  @ScaledMetric private var size: CGFloat
+
+  init(_ font: ThemeFont) {
+    self.font = font
+    _size = ScaledMetric(wrappedValue: font.size, relativeTo: font.scalesLike)
+  }
+
+  func body(content: Content) -> some View {
+    let base = Font.system(size: size, weight: font.weight, design: font.design)
+    content.font(font.isItalic ? base.italic() : base)
+  }
+}
+
+extension View {
+  func font(_ font: ThemeFont) -> some View {
+    modifier(ScaledThemeFont(font))
   }
 }
 
@@ -55,7 +116,7 @@ struct InkButtonStyle: ButtonStyle {
 
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .font(.system(size: 16, weight: .semibold))
+      .font(Theme.text(16, weight: .semibold))
       .padding(.horizontal, 20)
       .frame(minHeight: 48)
       .foregroundStyle(filled ? Theme.sheet : Theme.ink)

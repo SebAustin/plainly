@@ -70,7 +70,10 @@ private struct Masthead: View {
     VStack(alignment: .leading, spacing: 10) {
       Text("Plainly")
         .font(Theme.display(56).italic())
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
         .foregroundStyle(Theme.ink)
+        .accessibilityAddTraits(.isHeader)
       Text("Official mail, in plain words. Read privately on your device.")
         .font(.subheadline)
         .foregroundStyle(Theme.inkSoft)

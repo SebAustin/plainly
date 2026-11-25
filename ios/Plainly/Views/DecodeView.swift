@@ -70,11 +70,9 @@ struct DecodeView: View {
     }
   }
 
+  /// Parsed as Gregorian, then shown in the phone's own calendar and language.
   private func formatted(_ isoDate: String) -> String {
-    let parser = DateFormatter()
-    parser.dateFormat = "yyyy-MM-dd"
-    guard let date = parser.date(from: isoDate) else { return isoDate }
-    return date.formatted(date: .complete, time: .omitted)
+    deadlineDate(isoDate)?.formatted(date: .complete, time: .omitted) ?? isoDate
   }
 }
 
@@ -108,7 +106,7 @@ private struct ActionRow: View {
     } label: {
       HStack(alignment: .top, spacing: 12) {
         Image(systemName: isDone ? "checkmark.square.fill" : "square")
-          .font(.system(size: 20))
+          .font(Theme.text(20))
           .foregroundStyle(Theme.ink)
         VStack(alignment: .leading, spacing: 2) {
           Text(action.what).strikethrough(isDone).foregroundStyle(Theme.ink)

@@ -52,12 +52,19 @@ final class LetterViewModel {
   /// Consent covers that letter alone: a different letter asks again.
   private var consentedLetter: String?
   @ObservationIgnored private var inference: (any Inference)!
+  /// Set by tests to pin the on-device model's status.
+  private let deviceModelOverride: DeviceModelStatus?
 
-  init(isFirebaseConfigured: Bool) {
-    isDemo = !isFirebaseConfigured
-    let base: any Inference =
-      isFirebaseConfigured
-      ? FirebaseInference(cloudModelName: Self.cloudModelName) : FixtureInference()
+  convenience init(isFirebaseConfigured: Bool) {
+    self.init(
+      inference: isFirebaseConfigured
+        ? FirebaseInference(cloudModelName: Self.cloudModelName) : FixtureInference(),
+      isDemo: !isFirebaseConfigured)
+  }
+
+  init(inference base: any Inference, isDemo: Bool, deviceModel: DeviceModelStatus? = nil) {
+    self.isDemo = isDemo
+    deviceModelOverride = deviceModel
     inference = ReceiptInference(base) { [weak self] entry in
       Task { @MainActor in self?.receipt.append(entry) }
     }
@@ -73,6 +80,7 @@ final class LetterViewModel {
   #endif
 
   var deviceModel: DeviceModelStatus {
+    if let deviceModelOverride { return deviceModelOverride }
     if Self.simulatesNoDeviceModel { return .unavailable }
     return isDemo ? .available : FirebaseInference.deviceModelStatus
   }
@@ -88,8 +96,13 @@ final class LetterViewModel {
     cloudContext?.level ?? (deviceModel == .available ? .deviceAssisted : .rulesOnly)
   }
 
+  /// A question or a draft is waiting on a model. Explaining a new letter now
+  /// would let the old answer, and its receipt lines, land under the new one.
+  var isFollowingUp: Bool { isAsking || isDrafting }
+
   var canExplain: Bool {
     !letterText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isReading
+      && !isFollowingUp
   }
 
   func useSampleLetter() {
@@ -98,7 +111,7 @@ final class LetterViewModel {
 
   func explain() async {
     let text = letterText.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !text.isEmpty else { return }
+    guard !text.isEmpty, !isReading, !isFollowingUp else { return }
     resetResults()
     activeLetter = text
     isReading = true
@@ -117,7 +130,7 @@ final class LetterViewModel {
 
   func ask(_ text: String? = nil) async {
     let asked = (text ?? question).trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !asked.isEmpty, !isAsking else { return }
+    guard !asked.isEmpty, !isAsking, !isReading else { return }
     isAsking = true
     errorMessage = nil
     defer { isAsking = false }
@@ -138,7 +151,7 @@ final class LetterViewModel {
 
   func writeReply() async {
     let goal = replyGoal.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !goal.isEmpty, !isDrafting else { return }
+    guard !goal.isEmpty, !isDrafting, !isReading else { return }
     isDrafting = true
     errorMessage = nil
     defer { isDrafting = false }
@@ -154,14 +167,16 @@ final class LetterViewModel {
   }
 
   /// The reader agreed: remember it for this letter and run the waiting action.
-  func grantConsent() {
-    guard let request = pendingConsent else { return }
+  /// Returns the running action so tests can wait for it.
+  @discardableResult
+  func grantConsent() -> Task<Void, Never>? {
+    guard let request = pendingConsent else { return nil }
     pendingConsent = nil
     let letter =
       request == .explain
       ? letterText.trimmingCharacters(in: .whitespacesAndNewlines) : activeLetter
     consentedLetter = letter
-    Task {
+    return Task {
       switch request {
       case .explain: await explain()
       case .ask(let question): await ask(question)
@@ -212,8 +227,12 @@ final class LetterViewModel {
   private static let log = Logger(subsystem: "com.sebaustin.plainly", category: "letters")
 
   private func message(for error: Error) -> String {
-    // The reader gets a plain sentence; the detail goes to the device log.
-    Self.log.error("Model call failed: \(String(describing: error), privacy: .public)")
+    // The reader gets a plain sentence; the detail goes to the device log. An
+    // error's description can quote the letter or the model's answer, so only
+    // its type is public: the rest is redacted unless a debugger is attached.
+    Self.log.error(
+      "Model call failed: \(String(reflecting: type(of: error)), privacy: .public) \(String(describing: error), privacy: .private)"
+    )
     return switch error {
     case LetterError.blocked(.offline):
       "You are offline and this step needs the cloud. Nothing was sent. Try again when you are connected."

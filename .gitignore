@@ -38,4 +38,5 @@ dist-ssr
 ios/build/
 ios/PlainlyCore/.build/
 ios/GoogleService-Info.plist
+ios/Local.xcconfig
 xcuserdata/

@@ -122,13 +122,31 @@ private let validDecode = """
   }
 
   @Test func countsWholeDaysUntilADeadline() {
+    let chicago = TimeZone(identifier: "America/Chicago")!
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "America/Chicago")!
+    calendar.timeZone = chicago
     let now = calendar.date(from: DateComponents(year: 2026, month: 11, day: 21, hour: 23))!
 
-    #expect(daysUntil("2026-12-14", now: now, calendar: calendar) == 23)
-    #expect(daysUntil("2026-11-20", now: now, calendar: calendar) == -1)
-    #expect(daysUntil("soon", now: now, calendar: calendar) == nil)
+    #expect(daysUntil("2026-12-14", now: now, timeZone: chicago) == 23)
+    #expect(daysUntil("2026-11-20", now: now, timeZone: chicago) == -1)
+    #expect(daysUntil("soon", now: now, timeZone: chicago) == nil)
+  }
+
+  @Test func readsADeadlineAsAGregorianDateWhateverThePhonesCalendar() throws {
+    // A phone set to the Thai Buddhist calendar calls 2026 the year 2569. The
+    // letter's ISO date is Gregorian, so it must not be read as 2026 BE.
+    let bangkok = TimeZone(identifier: "Asia/Bangkok")!
+    let date = try #require(deadlineDate("2026-12-14", timeZone: bangkok))
+
+    var buddhist = Calendar(identifier: .buddhist)
+    buddhist.timeZone = bangkok
+    var gregorian = Calendar(identifier: .gregorian)
+    gregorian.timeZone = bangkok
+    #expect(buddhist.component(.year, from: date) == 2569)
+    #expect(
+      gregorian.dateComponents([.year, .month, .day], from: date)
+        == DateComponents(year: 2026, month: 12, day: 14))
+    #expect(deadlineDate("2026-02-31", timeZone: bangkok) == nil)
   }
 
   @Test func findsTheSoonestDeadline() throws {
