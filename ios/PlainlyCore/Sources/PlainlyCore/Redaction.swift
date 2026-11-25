@@ -183,3 +183,34 @@ public func restore(_ text: String, vault: Vault) -> String {
   }
   return result + ns.substring(from: cursor)
 }
+
+/// A piece of text as the privacy receipt shows it: plain text, or a
+/// placeholder drawn as a black bar.
+public enum ReceiptSegment: Sendable, Equatable {
+  case text(String)
+  case placeholder(kind: String, number: Int)
+}
+
+/// Splits text sent to the cloud into plain text and placeholders, so the
+/// receipt can build its display from pieces rather than editing in place.
+public func receiptSegments(_ text: String) -> [ReceiptSegment] {
+  guard let regex = try? NSRegularExpression(pattern: placeholderPattern) else {
+    return text.isEmpty ? [] : [.text(text)]
+  }
+  let ns = text as NSString
+  var segments: [ReceiptSegment] = []
+  var cursor = 0
+  for found in regex.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+    if found.range.location > cursor {
+      segments.append(
+        .text(ns.substring(with: NSRange(location: cursor, length: found.range.location - cursor))))
+    }
+    segments.append(
+      .placeholder(
+        kind: ns.substring(with: found.range(at: 1)),
+        number: Int(ns.substring(with: found.range(at: 2))) ?? 0))
+    cursor = NSMaxRange(found.range)
+  }
+  if cursor < ns.length { segments.append(.text(ns.substring(from: cursor))) }
+  return segments
+}

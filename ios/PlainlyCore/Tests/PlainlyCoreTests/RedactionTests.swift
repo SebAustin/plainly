@@ -86,4 +86,20 @@ import Testing
   @Test func restoreLeavesUnknownPlaceholdersUntouched() {
     #expect(restore("Ask [NAME_7].", vault: [:]) == "Ask [NAME_7].")
   }
+
+  @Test func splitsSentTextIntoTextAndPlaceholdersForTheReceipt() {
+    let segments = receiptSegments("Dear [NAME_1],[ADDRESS_12] [ok] call [PHONE_3]")
+
+    #expect(
+      segments == [
+        .text("Dear "), .placeholder(kind: "NAME", number: 1), .text(","),
+        .placeholder(kind: "ADDRESS", number: 12), .text(" [ok] call "),
+        .placeholder(kind: "PHONE", number: 3),
+      ])
+  }
+
+  @Test func textWithoutPlaceholdersIsOneSegment() {
+    #expect(receiptSegments("Nothing hidden.") == [.text("Nothing hidden.")])
+    #expect(receiptSegments("") == [])
+  }
 }

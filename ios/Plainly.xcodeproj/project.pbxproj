@@ -57,7 +57,7 @@
 		CFA06FB28519D8DB8DD98763 /* GeneratedShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratedShapes.swift; sourceTree = "<group>"; };
 		E4513653C4B8C4DA180F844A /* LetterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterViewModel.swift; sourceTree = "<group>"; };
 		F3BCEBEC9C311B7AE75F0B41 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		"TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
+		"TEMP_91E9B644-1366-4F8D-BE4A-B3FD67918A52" /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,10 +155,10 @@
 			path = Plainly;
 			sourceTree = "<group>";
 		};
-		"TEMP_EF250B30-8D2C-41BA-9C3A-CF0CB0F2B71A" /* ios */ = {
+		"TEMP_1B9BB339-3C48-42AC-8D76-D3E58F68AA40" /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */,
+				"TEMP_91E9B644-1366-4F8D-BE4A-B3FD67918A52" /* Signing.xcconfig */,
 			);
 			path = ios;
 			sourceTree = "<group>";
@@ -385,7 +385,7 @@
 		};
 		6542BBD434AC6D0E5C61606C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */;
+			baseConfigurationReference = "TEMP_91E9B644-1366-4F8D-BE4A-B3FD67918A52" /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Plainly/Plainly.entitlements;
@@ -396,7 +396,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Plainly;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -474,7 +475,7 @@
 		};
 		C7E56C05590A1D6451B77537 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_6BA5A014-75D8-4973-9A02-77D03A4D45D1" /* Signing.xcconfig */;
+			baseConfigurationReference = "TEMP_91E9B644-1366-4F8D-BE4A-B3FD67918A52" /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Plainly/Plainly.entitlements;
@@ -485,7 +486,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Plainly;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

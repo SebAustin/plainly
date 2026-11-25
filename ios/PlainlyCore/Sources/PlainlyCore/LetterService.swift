@@ -199,8 +199,7 @@ public func askFollowUp(
   let updated = CloudContext(
     redactedText: context.redactedText, vault: redactedQuestion.vault, level: context.level)
   return FollowUpReply(
-    answer: restore(result.text, vault: redactedQuestion.vault)
-      .trimmingCharacters(in: .whitespacesAndNewlines),
+    answer: try nonEmpty(restore(result.text, vault: redactedQuestion.vault)),
     cloudTurns: [
       ChatTurn(role: .user, text: redactedQuestion.redacted),
       ChatTurn(role: .model, text: result.text),
@@ -225,7 +224,13 @@ public func draftReply(
       task: .draftReply, mode: mode, system: Prompts.draftReplySystem,
       prompt: Prompts.draftReply(redactedLetter: context.redactedText, goal: redactedGoal.redacted)))
   return DraftedReply(
-    text: restore(result.text, vault: redactedGoal.vault)
-      .trimmingCharacters(in: .whitespacesAndNewlines),
-    source: result.source)
+    text: try nonEmpty(restore(result.text, vault: redactedGoal.vault)), source: result.source)
+}
+
+/// A model can return an empty answer (a safety filter, a cut-off stream). The
+/// reader should be told it failed, not shown a blank reply.
+private func nonEmpty(_ answer: String) throws -> String {
+  let trimmed = answer.trimmingCharacters(in: .whitespacesAndNewlines)
+  guard !trimmed.isEmpty else { throw LetterError.unreadableAnswer }
+  return trimmed
 }
