@@ -72,19 +72,20 @@ Other Firebase products:
 - **Remote Config** sets the cloud model name and the on-device token budget without a redeploy.
 - **Firebase Hosting** serves the app with a Content Security Policy.
 
-The web app is React, TypeScript and Vite. The routing, redaction and parsing logic is pure and covered by 39 unit tests. One group of tests runs the full flows against a recording fake model and asserts that no name or email appears in anything sent to the cloud.
+The web app is React, TypeScript and Vite. The routing, redaction and parsing logic is pure and covered by 48 unit tests. One group of tests runs the full flows against a recording fake model and asserts that no name or email appears in anything sent to the cloud.
 
 ### The same privacy gate on iOS
 
 Plainly also has a native iOS app (SwiftUI, in `ios/` in the repo), using Firebase AI Logic's hybrid inference for Apple platforms. Apple's on-device Foundation Model reads the letter and lists names and addresses; Gemini answers follow-up questions in the cloud, after redaction. Each task is given one model on a `GenerativeModelSession`: the on-device system model alone, Gemini alone, or a `HybridModel` with the device first for reply drafting. The "On this device" stamp comes from the model version the SDK reports for each answer.
 
-The routing, redaction and parsing logic is ported to a pure Swift package with 46 tests, including the same "nothing personal reaches the cloud" checks. A few things are different on iOS:
+The routing, redaction and parsing logic is ported to a pure Swift package with 51 tests, including the same "nothing personal reaches the cloud" checks, and 7 more tests cover the app's screen logic. A few things are different on iOS:
 
 - **Photos are read with Apple's Vision framework.** The on-device model takes text only, so a photographed letter becomes text on the phone and the picture is never uploaded.
 - **The reader is asked before details can leave the phone.** On an iPhone without Apple Intelligence, or when the on-device model's list of names can't be read, Plainly can only hide emails and phone, ID and account numbers. It then asks before sending anything, and says the name and address would be sent.
 - **No structured output on device.** Apple's default content guardrails rejected ordinary medical bills when the on-device model was held to a schema, so on the device it fills in a JSON template instead, and the cloud uses a schema. Both answers are validated before anything is shown.
+- **Readable by the people who need it most.** All text follows the iPhone's text size setting, up to the largest accessibility sizes. Deadlines are counted in the Gregorian calendar even on a phone set to the Buddhist or Japanese calendar, so the days-left figure stays right.
 
-The iOS app has been run in the simulator with Apple's real on-device model reading the sample letter.
+The iOS app has been run in the simulator with Apple's real on-device model reading the sample letter, including at the largest text sizes.
 
 ## Challenges we ran into
 
@@ -136,4 +137,4 @@ Everything. Plainly is a new project started on November 19, 2026; there was no 
 
 No login is needed. Without the on-device model the app still runs: pasted text is sent to the cloud after pattern-based redaction, and the receipt shows it.
 
-The iOS app is not on the App Store. To try it, open `ios/Plainly.xcodeproj` in Xcode 26.2 or newer and run it on an iOS 26 simulator. Without a Firebase config file it starts in a clearly labelled demo mode with canned answers; `ios/README.md` explains how to connect it to a Firebase project for real models. On-device reading needs Apple Intelligence on the Mac or device.
+The iOS app is not on the App Store. To try it, open `ios/Plainly.xcodeproj` in Xcode 26.2 or newer and run it on an iOS 26 simulator. Without a Firebase config file it starts in a clearly labelled demo mode with canned answers; `ios/README.md` explains how to connect it to a Firebase project for real models. On-device reading needs Apple Intelligence on the Mac or device. To run it on an iPhone, put your Apple developer team ID in `ios/Local.xcconfig` (`ios/Signing.xcconfig` shows how).
