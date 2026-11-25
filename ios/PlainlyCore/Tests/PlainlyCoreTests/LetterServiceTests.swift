@@ -24,11 +24,16 @@ private final class RecordingInference: Inference, @unchecked Sendable {
   private let chatAnswer: String
   private let garbled: Bool
   private let detailsAnswer: String
+  private let draftAnswer: String
 
-  init(chatAnswer: String = "", garbled: Bool = false, detailsAnswer: String = entitiesAnswer) {
+  init(
+    chatAnswer: String = "", garbled: Bool = false, detailsAnswer: String = entitiesAnswer,
+    draftAnswer: String = "Dear office,\nPlease help.\n[NAME_1]\n\n"
+  ) {
     self.chatAnswer = chatAnswer
     self.garbled = garbled
     self.detailsAnswer = detailsAnswer
+    self.draftAnswer = draftAnswer
   }
 
   var generated: [GenerateRequest] { lock.withLock { generatedRequests } }
@@ -49,7 +54,7 @@ private final class RecordingInference: Inference, @unchecked Sendable {
     case .findPersonalDetails:
       return InferenceResult(text: detailsAnswer, source: source)
     case .draftReply:
-      return InferenceResult(text: "Dear office,\nPlease help.\n[NAME_1]\n\n", source: source)
+      return InferenceResult(text: draftAnswer, source: source)
     default:
       let who = request.mode == .onlyInCloud ? "[NAME_1]" : "Maria Okafor"
       return InferenceResult(text: decodeAnswer(who), source: source)
@@ -239,6 +244,27 @@ private let unreadableDetails = "Here are the names: Maria Okafor"
 
     #expect(context.level == .deviceAssisted)
     #expect(model.generated.filter { $0.task == .findPersonalDetails }.count == 1)
+  }
+}
+
+@Suite struct EmptyAnswerTests {
+  @Test func anEmptyFollowUpAnswerIsAnErrorNotABlankReply() async throws {
+    let model = RecordingInference(chatAnswer: " \n ")
+    let context = try await prepareCloudContext(letter, environment: ready, inference: model)
+
+    await #expect(throws: LetterError.unreadableAnswer) {
+      try await askFollowUp(
+        context: context, history: [], question: "Why?", environment: ready, inference: model)
+    }
+  }
+
+  @Test func anEmptyDraftIsAnErrorNotABlankReply() async throws {
+    let model = RecordingInference(draftAnswer: "\n\n")
+    let context = try await prepareCloudContext(letter, environment: ready, inference: model)
+
+    await #expect(throws: LetterError.unreadableAnswer) {
+      try await draftReply(context: context, goal: "More time", environment: ready, inference: model)
+    }
   }
 }
 

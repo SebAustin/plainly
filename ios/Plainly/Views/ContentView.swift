@@ -2,7 +2,12 @@ import PlainlyCore
 import SwiftUI
 
 struct ContentView: View {
+  /// How often to look again while Apple Intelligence is still downloading.
+  private static let preparingRecheck: Duration = .seconds(5)
+
   @Bindable var model: LetterViewModel
+  // PlainlyCore has its own `Environment` (routing inputs), hence the prefix.
+  @SwiftUI.Environment(\.scenePhase) private var scenePhase
 
   var body: some View {
     ScrollViewReader { proxy in
@@ -55,6 +60,17 @@ struct ContentView: View {
         )
       }
       .background(Theme.paper.ignoresSafeArea())
+      // The reader may have turned on Apple Intelligence in Settings meanwhile.
+      .onChange(of: scenePhase) { _, phase in
+        if phase == .active { model.refreshDeviceModel() }
+      }
+      // Restarts whenever the status changes, and stops once it is not preparing.
+      .task(id: model.deviceModel) {
+        while model.deviceModel == .preparing, !Task.isCancelled {
+          try? await Task.sleep(for: Self.preparingRecheck)
+          model.refreshDeviceModel()
+        }
+      }
       .onChange(of: model.decoded != nil) { _, hasResult in
         guard hasResult else { return }
         withAnimation(.easeOut(duration: 0.4)) { proxy.scrollTo("decode", anchor: .top) }

@@ -56,7 +56,7 @@ struct DecodeView: View {
           if let deadline, let days = daysUntil(deadline) {
             Figure(
               value: "\(abs(days))", label: days >= 0 ? "Days left" : "Days overdue",
-              detail: formatted(deadline), isUrgent: days <= 7)
+              detail: readableDate(deadline, style: .complete), isUrgent: days <= 7)
           }
           if let amount = decode.amountDue {
             Figure(
@@ -69,11 +69,12 @@ struct DecodeView: View {
       }
     }
   }
+}
 
-  /// Parsed as Gregorian, then shown in the phone's own calendar and language.
-  private func formatted(_ isoDate: String) -> String {
-    deadlineDate(isoDate)?.formatted(date: .complete, time: .omitted) ?? isoDate
-  }
+/// An ISO deadline parsed as Gregorian, then shown in the phone's own calendar
+/// and language. Falls back to the raw text if it is not a real date.
+private func readableDate(_ isoDate: String, style: Date.FormatStyle.DateStyle) -> String {
+  deadlineDate(isoDate)?.formatted(date: style, time: .omitted) ?? isoDate
 }
 
 private struct Figure: View {
@@ -111,7 +112,9 @@ private struct ActionRow: View {
         VStack(alignment: .leading, spacing: 2) {
           Text(action.what).strikethrough(isDone).foregroundStyle(Theme.ink)
           if let deadline = action.deadline {
-            Text("By \(deadline)").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.urgent)
+            Text("By \(readableDate(deadline, style: .abbreviated))")
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(Theme.urgent)
           }
         }
         .multilineTextAlignment(.leading)

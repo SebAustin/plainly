@@ -64,18 +64,21 @@ struct ReceiptView: View {
     return "\(calls) · \(cloud) left this device"
   }
 
-  /// Shows placeholders such as [NAME_1] as black redaction bars.
+  /// Shows placeholders such as [NAME_1] as black redaction bars, built piece
+  /// by piece so a bar's label can be any length.
   private func blackedOut(_ text: String) -> AttributedString {
-    var styled = AttributedString(text)
-    styled.foregroundColor = Theme.ink
-    let pattern = /\[([A-Z]+)_(\d+)\]/
-    for match in text.matches(of: pattern) {
-      guard let range = Range(match.range, in: styled) else { continue }
-      var bar = AttributedString(" \(match.output.1) \(match.output.2) ")
-      bar.backgroundColor = Theme.redaction
-      bar.foregroundColor = Theme.sheet
-      styled.replaceSubrange(range, with: bar)
+    receiptSegments(text).reduce(into: AttributedString()) { styled, segment in
+      switch segment {
+      case .text(let plain):
+        var piece = AttributedString(plain)
+        piece.foregroundColor = Theme.ink
+        styled += piece
+      case .placeholder(let kind, let number):
+        var bar = AttributedString(" \(kind) \(number) ")
+        bar.backgroundColor = Theme.redaction
+        bar.foregroundColor = Theme.sheet
+        styled += bar
+      }
     }
-    return styled
   }
 }

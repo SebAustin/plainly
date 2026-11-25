@@ -52,8 +52,12 @@ final class LetterViewModel {
   /// Consent covers that letter alone: a different letter asks again.
   private var consentedLetter: String?
   @ObservationIgnored private var inference: (any Inference)!
-  /// Set by tests to pin the on-device model's status.
-  private let deviceModelOverride: DeviceModelStatus?
+  /// Where the on-device model's status is read from. Tests pass their own.
+  @ObservationIgnored private let readDeviceModel: @MainActor () -> DeviceModelStatus
+
+  /// Apple Intelligence can finish downloading, or be turned on in Settings,
+  /// while the app is open. `refreshDeviceModel()` picks that up.
+  private(set) var deviceModel: DeviceModelStatus
 
   convenience init(isFirebaseConfigured: Bool) {
     self.init(
@@ -62,9 +66,14 @@ final class LetterViewModel {
       isDemo: !isFirebaseConfigured)
   }
 
-  init(inference base: any Inference, isDemo: Bool, deviceModel: DeviceModelStatus? = nil) {
+  init(
+    inference base: any Inference, isDemo: Bool,
+    deviceModel: (@MainActor () -> DeviceModelStatus)? = nil
+  ) {
     self.isDemo = isDemo
-    deviceModelOverride = deviceModel
+    let read = deviceModel ?? { Self.systemDeviceModel(isDemo: isDemo) }
+    readDeviceModel = read
+    self.deviceModel = read()
     inference = ReceiptInference(base) { [weak self] entry in
       Task { @MainActor in self?.receipt.append(entry) }
     }
@@ -79,10 +88,15 @@ final class LetterViewModel {
     private static let simulatesNoDeviceModel = false
   #endif
 
-  var deviceModel: DeviceModelStatus {
-    if let deviceModelOverride { return deviceModelOverride }
-    if Self.simulatesNoDeviceModel { return .unavailable }
+  private static func systemDeviceModel(isDemo: Bool) -> DeviceModelStatus {
+    if simulatesNoDeviceModel { return .unavailable }
     return isDemo ? .available : FirebaseInference.deviceModelStatus
+  }
+
+  /// Reads the on-device model's status again; the header and routing follow.
+  func refreshDeviceModel() {
+    let current = readDeviceModel()
+    if current != deviceModel { deviceModel = current }
   }
 
   private func environment(for letter: String) -> Environment {

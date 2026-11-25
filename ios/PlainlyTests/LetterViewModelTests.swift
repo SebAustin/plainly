@@ -38,7 +38,7 @@ private func model(
 ) -> LetterViewModel {
   let model = LetterViewModel(
     inference: FakeInference(log: log, heldChat: heldChat), isDemo: false,
-    deviceModel: deviceModel)
+    deviceModel: { deviceModel })
   model.letterText = sampleLetter
   return model
 }
@@ -51,6 +51,19 @@ private func receiptSettles(_ model: LetterViewModel, count: Int) async {
 
 @MainActor
 @Suite struct LetterViewModelTests {
+  @Test func picksUpTheOnDeviceModelOnceItFinishesDownloading() {
+    var status = DeviceModelStatus.preparing
+    let model = LetterViewModel(
+      inference: FakeInference(log: CallLog()), isDemo: false, deviceModel: { status })
+    #expect(model.deviceModel == .preparing)
+
+    status = .available
+    model.refreshDeviceModel()
+
+    #expect(model.deviceModel == .available)
+    #expect(model.redactionLevel == .deviceAssisted)
+  }
+
   @Test func explainsALetterOnTheDeviceWithNothingSentToTheCloud() async {
     let model = model()
 
