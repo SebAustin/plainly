@@ -108,8 +108,23 @@ public func parseDecode(_ raw: String) -> Result<Decode, DecodeParseError> {
   return .success(decode)
 }
 
+/// ISO dates in letters are Gregorian. The phone's own calendar may not be
+/// (Buddhist, Japanese), so deadline maths never uses `Calendar.current`.
+private func gregorian(in timeZone: TimeZone) -> Calendar {
+  var calendar = Calendar(identifier: .gregorian)
+  calendar.timeZone = timeZone
+  return calendar
+}
+
+/// The start of an ISO deadline day in `timeZone`, or nil if it is not a real date.
+/// Format the result with the phone's own calendar for display.
+public func deadlineDate(_ isoDate: String, timeZone: TimeZone = .current) -> Date? {
+  calendarDate(isoDate, calendar: gregorian(in: timeZone))
+}
+
 /// Whole calendar days from `now` to an ISO deadline. Negative once it has passed.
-public func daysUntil(_ isoDate: String, now: Date = Date(), calendar: Calendar = .current) -> Int? {
+public func daysUntil(_ isoDate: String, now: Date = Date(), timeZone: TimeZone = .current) -> Int? {
+  let calendar = gregorian(in: timeZone)
   guard let deadline = calendarDate(isoDate, calendar: calendar) else { return nil }
   let today = calendar.startOfDay(for: now)
   return calendar.dateComponents([.day], from: today, to: deadline).day

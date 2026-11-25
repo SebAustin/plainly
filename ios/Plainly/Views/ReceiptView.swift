@@ -44,7 +44,7 @@ struct ReceiptView: View {
               .buttonStyle(.plain)
               if expanded.contains(entry.id) {
                 Text(blackedOut(sent))
-                  .font(.system(size: 12, design: .monospaced))
+                  .font(Theme.mono(12))
                   .lineSpacing(4)
                   .padding(12)
                   .frame(maxWidth: .infinity, alignment: .leading)

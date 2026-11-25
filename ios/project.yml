@@ -16,6 +16,16 @@ targets:
     platform: iOS
     sources:
       - path: Plainly
+    configFiles:
+      # Signing.xcconfig optionally includes the git-ignored Local.xcconfig,
+      # where DEVELOPMENT_TEAM is set for running on a real iPhone.
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    entitlements:
+      path: Plainly/Plainly.entitlements
+      properties:
+        # Release builds protect the AI Logic endpoint with App Attest.
+        com.apple.developer.devicecheck.appattest-environment: production
     postBuildScripts:
       - name: Copy Firebase config if present
         basedOnDependencyAnalysis: false
@@ -43,5 +53,26 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Plainly
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGN_STYLE: Automatic
         ENABLE_USER_SCRIPT_SANDBOXING: NO
+  PlainlyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PlainlyTests
+    dependencies:
+      - target: Plainly
+      - package: PlainlyCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sebaustin.plainly.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+schemes:
+  Plainly:
+    build:
+      targets:
+        Plainly: all
+    test:
+      targets:
+        - PlainlyTests
